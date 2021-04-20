@@ -1,0 +1,16 @@
+[package]
+name = "dome-seeing"
+version = "0.1.0"
+authors = ["Rod Conan <rconan@gmto.org>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+complot = { git = "https://github.com/rconan/complot.git", branch = "main" }
+csv = "1.1.6"
+geotrans = { git = "https://github.com/rconan/geotrans.git", branch = "main" }
+nalgebra = "0.26.1"
+rbf-interp = {path = "/home/rconan/projects/rbf-interp"}
+rstar = "0.8.2"
+serde = { version = "1.0.125", features = ["derive"] }
