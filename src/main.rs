@@ -25,14 +25,11 @@ fn main() -> std::result::Result<(), DomeSeeingError> {
 
     let temperature = temp_field.z_slice(18f64, &mut pupil);
 
-    let interp_method = env::var("METHOD").unwrap_or("NEAREST_NEIGHBOR".to_string());
-    println!("Interpolation method: {}", interp_method);
-
     println!("Temperature min/max : {:7.3?}K", minmax(&temperature));
 
     env::var("PLOT")
         .and({
-            let filename = format!("slice_{}.png", interp_method.to_lowercase());
+            let filename = format!("slice_{}.png", temp_field.method);
             let plot = plt::png_canvas(&filename);
             plt::imagesc(&temperature, &plot);
             Ok(())
