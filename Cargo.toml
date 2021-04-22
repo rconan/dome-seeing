@@ -11,9 +11,10 @@ complot = { git = "https://github.com/rconan/complot.git", branch = "main" }
 csv = "1.1.6"
 geotrans = { git = "https://github.com/rconan/geotrans.git", branch = "main" }
 gmt-kpp = { git = "https://github.com/rconan/gmt-kpp.git", branch = "main" }
+indicatif = { version = "0.15.0", features = ["rayon"] }
 nalgebra = "0.26.1"
 plotters = "0.3.0"
 rayon = "1.5.0"
-rbf-interp = {path = "/home/rconan/projects/rbf-interp"}
+rbf-interp = { git = "https://github.com/rconan/rbf-interp.git"}
 rstar = "0.8.2"
 serde = { version = "1.0.125", features = ["derive"] }

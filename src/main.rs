@@ -7,6 +7,7 @@ use gmt_kpp::KPP;
 use rayon::prelude::*;
 use std::time::Instant;
 //use std::env;
+use indicatif::{ParallelProgressIterator, ProgressBar};
 
 fn minmax(data: &[f64]) -> (f64, f64) {
     let max = data
@@ -47,6 +48,7 @@ fn main() -> std::result::Result<(), DomeSeeingError> {
     println!("Interpolation ...");
     let interpolated_data: Vec<_> = (0..nz)
         .into_par_iter()
+        .progress_with(ProgressBar::new(nz as u64))
         .map(|k| {
             let z = z_start - k as f64 * dz;
             let mut points = pupil.points.clone();
