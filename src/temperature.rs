@@ -1,3 +1,4 @@
+use super::{PupilInner, Result,InterpolationMethod};
 use csv;
 use nalgebra::DVector;
 use rbf_interp::{Basis, Scatter};
@@ -5,7 +6,6 @@ use rstar::{primitives::PointWithData, RTree, AABB};
 use serde::Deserialize;
 use std::path::Path;
 use std::{env, fs::File, io::BufReader, time::Instant};
-use crate::{PupilInner, Result};
 
 #[derive(Deserialize)]
 pub struct TemperatureData {
@@ -20,40 +20,8 @@ pub struct TemperatureData {
 }
 
 type TemperatureNode = PointWithData<f64, [f64; 3]>;
-pub enum InterpolationMethod {
-    NearestNeighbor,
-    RadialBasis,
-}
-impl InterpolationMethod {
-    pub fn from_env() -> Result<Self> {
-        env::var("METHOD").map_or(Ok(Self::NearestNeighbor), |e| match e.as_str() {
-            "NEAREST_NEIGHBOR" => Ok(Self::NearestNeighbor),
-            "RADIAL_BASIS" => Ok(Self::RadialBasis),
-            _ => Err("interpolation method is either NEAREST_NEIGHBOR or RADIAL_BASIS".into()),
-        })
-    }
-}
-impl std::fmt::Display for InterpolationMethod {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        use InterpolationMethod::*;
-        match self {
-            NearestNeighbor => f.write_str("nearest_neighbor")?,
-            RadialBasis => f.write_str("radial_basis")?,
-        };
-        Ok(())
-    }
-}
-impl From<InterpolationMethod> for String {
-    fn from(method: InterpolationMethod) -> Self {
-        use InterpolationMethod::*;
-        match method {
-            NearestNeighbor => String::from("nearest_neighbor"),
-            RadialBasis => String::from("radial_basis"),
-        }
-    }
-}
 pub struct TemperatureField {
-    scattered_data: RTree<TemperatureNode>,
+    pub scattered_data: RTree<TemperatureNode>,
     pub z_minmax: (f64, f64),
     pub temp_minmax: (f64, f64),
     pub method: InterpolationMethod,
@@ -72,11 +40,12 @@ impl TemperatureField {
         let mut temp_min = f64::INFINITY;
         for result in data.deserialize() {
             let record: TemperatureData = result?;
-            if record.z > z_max {
-                z_max = record.z;
+            let z = record.z - 3.;
+            if z > z_max {
+                z_max = z;
             }
-            if record.z < z_min {
-                z_min = record.z;
+            if z < z_min {
+                z_min = z;
             }
             if record.temperature > temp_max {
                 temp_max = record.temperature;
@@ -86,7 +55,7 @@ impl TemperatureField {
             }
             tree.insert(TemperatureNode::new(
                 record.temperature,
-                [record.x, record.y, record.z],
+                [record.x, record.y, z],
             ));
         }
         println!(" ... in {}ms", now.elapsed().as_millis());

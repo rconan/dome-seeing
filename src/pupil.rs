@@ -55,7 +55,6 @@ fn truss_shadow(x: f64, y: f64) -> bool {
     }
 }
 
-
 pub struct Pupil {
     length: f64,
     d: f64,
@@ -96,14 +95,24 @@ impl Pupil {
                 loop {
                     let u = geotrans::Vector::from([x, y, 0.]);
                     let v = if sid < 7 {
-                        let (s, c) = (90. - 60. * (sid - 1) as f64).to_radians().sin_cos();
+                        let o = -60. * (sid - 1) as f64;
+                        let (s, c) = (90. + o).to_radians().sin_cos();
                         let t = geotrans::Vector::from([L * c, L * s, 0.]);
-                        u - t
+                        let q = geotrans::Quaternion::unit(o.to_radians(), geotrans::Vector::k());
+                        let p: geotrans::Quaternion = u.into();
+                        geotrans::Vector::from(
+                            (q.complex_conjugate() * (p - t.into()) * &q).vector_as_slice(),
+                        )
                     } else {
                         u
                     };
                     //println!("{:?}",v);
-                    let r = v[0].hypot(v[1]);
+                    let s = if sid < 7 {
+                        13.601685f64.to_radians().cos()
+                    } else {
+                        1f64
+                    };
+                    let r = v[0].hypot(v[1] / s);
                     if r <= m1_radius && !(sid == 7 && (truss_shadow(x, y) || r < m2_radius)) {
                         //println!("sid: {} -> [{},{}]", sid, i, j);
                         let point = [x, y, z];
@@ -136,5 +145,15 @@ impl PupilInner {
             p[2] = z;
         });
         self
+    }
+    pub fn nnz(&self) -> usize {
+        self.points.len()
+    }
+    pub fn mask(&self) -> Vec<f64> {
+        let mut m = vec![0f64;self.n*self.n];
+        self.index.iter().for_each(|k| {
+            m[*k] = 1f64;
+        });
+        m
     }
 }
